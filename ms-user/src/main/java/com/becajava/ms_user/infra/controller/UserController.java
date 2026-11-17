@@ -1,5 +1,6 @@
 package com.becajava.ms_user.infra.controller;
 
+import com.becajava.ms_user.core.domain.UserRole;
 import com.becajava.ms_user.core.usecase.AtualizarUsuarioUseCase;
 import com.becajava.ms_user.core.usecase.BuscarUsuarioUseCase;
 import com.becajava.ms_user.core.usecase.CriarUsuarioUseCase;
@@ -10,6 +11,7 @@ import com.becajava.ms_user.infra.service.ExcelImportService; // <--- Importante
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,7 +41,13 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UsuarioResponseDTO> criarUsuario(@RequestBody UsuarioRequestDTO dto){
+    public ResponseEntity<UsuarioResponseDTO> criarUsuario(@RequestBody UsuarioRequestDTO dto, Authentication authentication){
+        // O cadastro e publico: so um ADMIN autenticado pode definir um perfil diferente de USER.
+        boolean admin = authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        if (!admin) {
+            dto = new UsuarioRequestDTO(dto.nome(), dto.cpf(), dto.email(), dto.senha(), UserRole.USER);
+        }
         UsuarioResponseDTO novoUsuario = criarUsuarioUseCase.execute(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
     }

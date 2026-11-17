@@ -40,10 +40,10 @@ RAIZ DO PROJETO/
 
 1. Build e Inicialização Automática:
 Execute o ficheiro executar_projeto.bat na raiz do projeto. Este script automatiza o mvn clean package em todos os módulos e inicia o docker-compose up --build.
-2. Gestão Manual do Banco de Dados (Postgres):
-O Docker cria automaticamente apenas o user_db. É obrigatório criar o banco de dados das transações manualmente após a primeira subida dos containers. Utilize os comandos abaixo no terminal:
+2. Banco de Dados (Postgres):
+Na primeira subida (volume vazio), o Docker cria automaticamente o user_db e, através do init.sql, o transacao_db. Se o volume postgres_data já existia de uma execução anterior, o init.sql não volta a ser executado; nesse caso crie o banco das transações manualmente (ou recomece com docker-compose down -v):
 
-Criar banco de dados:
+Criar banco de dados (apenas se o volume já existia):
 docker exec -it postgres createdb -U devuser transacao_db
 
 Consultar transações (Validação do Worker):
@@ -58,6 +58,11 @@ docker exec -it postgres psql -U devuser -d user_db -c "SELECT * FROM usuarios;"
 * RBAC (Controlo de Acesso):
 * ROLE_USER: Permissão para criar transações.
 * ROLE_ADMIN: Permissão para relatórios analíticos e gestão total.
+* O registo público (POST /users) cria sempre utilizadores com o perfil USER, mesmo que o pedido envie "role": "ADMIN". Apenas um ADMIN autenticado (com token) pode criar outro ADMIN.
+* Validação de utilizador no worker: o ms-transaction-worker consulta o ms-user (GET /users/{id}) com um token de serviço de curta duração (perfil SERVICE), assinado com o mesmo JWT secret (api.security.token.secret deve ser igual nos dois serviços). Esse token só permite consultar utilizadores. Se o utilizador não existir ou o ms-user estiver indisponível, a transação é REPROVADA.
+
+Promover o primeiro ADMIN (depois é preciso fazer login de novo para obter um token com o novo perfil):
+docker exec -it postgres psql -U devuser -d user_db -c "UPDATE usuarios SET role='ADMIN' WHERE email='teste@email.com';"
 
 
 

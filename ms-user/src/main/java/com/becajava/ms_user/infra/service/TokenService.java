@@ -10,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 @Service
 public class TokenService implements TokenGateway {
@@ -48,7 +46,22 @@ public class TokenService implements TokenGateway {
         }
     }
 
+    public String obterRole(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            String role = JWT.require(algorithm)
+                    .withIssuer("ms-user")
+                    .build()
+                    .verify(token)
+                    .getClaim("role")
+                    .asString();
+            return role != null ? role : "";
+        } catch (JWTVerificationException exception){
+            return "";
+        }
+    }
+
     private Instant gerarDataExpiracao() {
-        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
+        return Instant.now().plusSeconds(2 * 60 * 60);
     }
 }

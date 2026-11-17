@@ -80,27 +80,27 @@ class ProcessarTransacaoUseCaseTest {
     }
 
     @Test
-    @DisplayName("4. Usuário NÃO existe (false) -> Lança Exception interna, Catch captura e CONTINUA")
+    @DisplayName("4. Usuário NÃO existe (false) -> Reprova sem tocar na carteira")
     void usuarioNaoExiste() {
         when(validadorGateway.usuarioExiste(anyLong())).thenReturn(false);
-        when(financeiroClient.buscarCarteiraPorUserId(anyLong()))
-                .thenReturn(List.of(criarCarteira(BigDecimal.valueOf(1000))));
 
         useCase.execute(criarTransacao(BigDecimal.TEN, "DESPESA"));
 
-        verify(transacaoGateway).atualizarStatus(any(UUID.class), eq(StatusTransacao.APROVADA));
+        verifyNoInteractions(financeiroClient);
+        verify(transacaoGateway).atualizarStatus(any(UUID.class), eq(StatusTransacao.REPROVADA));
+        verify(transacaoGateway, never()).atualizarStatus(any(UUID.class), eq(StatusTransacao.APROVADA));
     }
 
     @Test
-    @DisplayName("5. Erro na API de Usuário (Exception) -> Catch captura e CONTINUA")
+    @DisplayName("5. Erro na API de Usuário (Exception) -> Reprova sem tocar na carteira")
     void erroApiUsuario() {
         when(validadorGateway.usuarioExiste(anyLong())).thenThrow(new RuntimeException("API User Off"));
-        when(financeiroClient.buscarCarteiraPorUserId(anyLong()))
-                .thenReturn(List.of(criarCarteira(BigDecimal.valueOf(1000))));
 
         useCase.execute(criarTransacao(BigDecimal.TEN, "DESPESA"));
 
-        verify(transacaoGateway).atualizarStatus(any(UUID.class), eq(StatusTransacao.APROVADA));
+        verifyNoInteractions(financeiroClient);
+        verify(transacaoGateway).atualizarStatus(any(UUID.class), eq(StatusTransacao.REPROVADA));
+        verify(transacaoGateway, never()).atualizarStatus(any(UUID.class), eq(StatusTransacao.APROVADA));
     }
 
 

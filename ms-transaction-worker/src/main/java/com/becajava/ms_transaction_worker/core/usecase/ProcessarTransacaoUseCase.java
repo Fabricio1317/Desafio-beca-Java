@@ -36,12 +36,8 @@ public class ProcessarTransacaoUseCase {
                 throw new RuntimeException("Valor deve ser positivo.");
             }
 
-            try {
-                if (!validadorGateway.usuarioExiste(transacao.getUsuarioId())) {
-                    throw new RuntimeException("Usuario nao encontrado no MS-User.");
-                }
-            } catch (Exception e) {
-                System.out.println("Aviso: Nao foi possivel validar usuario. Seguindo...");
+            if (!validadorGateway.usuarioExiste(transacao.getUsuarioId())) {
+                throw new RuntimeException("Usuario " + transacao.getUsuarioId() + " nao encontrado ou nao validado no MS-User.");
             }
 
             ContaExternaDTO carteira = buscarCarteiraMock(transacao.getUsuarioId());

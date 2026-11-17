@@ -23,6 +23,7 @@ public class ValidadorGtwImpl implements ValidadorGateway {
         try {
             return usuarioClient.buscarPorId(usuarioId) != null;
         } catch (Exception e) {
+            System.out.println("Falha ao validar usuario " + usuarioId + " no MS-User: " + e.getMessage());
             return false;
         }
     }

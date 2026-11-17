@@ -1,1 +1,1 @@
-CREATE DATABASE transacao_db
+CREATE DATABASE transacao_db;
