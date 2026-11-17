@@ -41,6 +41,7 @@ services:
       POSTGRES_DB: user_db 
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   ms-user:
     build: ./ms-user
@@ -66,7 +67,7 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/transacao_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transacao_db
       SPRING_DATASOURCE_USERNAME: devuser
       SPRING_DATASOURCE_PASSWORD: dev12345
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
@@ -80,10 +81,11 @@ services:
       kafka:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5433/transacao_db
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/transacao_db
       SPRING_DATASOURCE_USERNAME: devuser
       SPRING_DATASOURCE_PASSWORD: dev12345
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      MS_USER_URL: http://ms-user:8081
 
   kafdrop:
     image: obsidiandynamics/kafdrop

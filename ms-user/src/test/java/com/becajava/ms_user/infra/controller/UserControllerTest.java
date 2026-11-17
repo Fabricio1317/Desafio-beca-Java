@@ -41,6 +41,8 @@ class UserControllerTest {
     @MockBean private BuscarUsuarioUseCase buscarUsuarioUseCase;
     @MockBean private AtualizarUsuarioUseCase atualizarUsuarioUseCase;
     @MockBean private ExcelImportService excelImportService;
+    @MockBean private com.becajava.ms_user.infra.service.TokenService tokenService;
+    @MockBean private com.becajava.ms_user.infra.persistence.UsuarioRepository usuarioRepository;
 
     // --- HELPERS CORRIGIDOS ---
 
