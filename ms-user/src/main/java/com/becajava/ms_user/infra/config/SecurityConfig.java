@@ -39,10 +39,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/users/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/users/importar").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.PUT, "/users/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/users/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/users/**").hasAnyRole("USER", "ADMIN")
+                        // SERVICE: token de servico do ms-transaction-worker, usado apenas para consultar usuarios
+                        .requestMatchers(HttpMethod.GET, "/users/**").hasAnyRole("USER", "ADMIN", "SERVICE")
 
-                        .anyRequest().authenticated()
+                        .anyRequest().hasAnyRole("USER", "ADMIN")
                 )
 
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

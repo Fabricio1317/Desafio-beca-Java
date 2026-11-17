@@ -8,15 +8,18 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
+
+    private static final String ROLE_SERVICO = "SERVICE";
 
     private final TokenService tokenService;
     private final UsuarioRepository usuarioRepository;
@@ -34,16 +37,27 @@ public class SecurityFilter extends OncePerRequestFilter {
             var login = tokenService.validarToken(token);
 
             if (!login.isEmpty()) {
-                UsuarioEntity usuario = usuarioRepository.findByEmail(login).orElse(null);
-
-                if (usuario != null) {
+                if (ROLE_SERVICO.equals(tokenService.obterRole(token))) {
+                    // Token de servico (ex.: ms-transaction-worker): nao corresponde a um usuario do banco.
                     var authentication = new UsernamePasswordAuthenticationToken(
-                            usuario,
+                            login,
                             null,
-                            usuario.getAuthorities()
+                            List.of(new SimpleGrantedAuthority("ROLE_" + ROLE_SERVICO))
                     );
 
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                } else {
+                    UsuarioEntity usuario = usuarioRepository.findByEmail(login).orElse(null);
+
+                    if (usuario != null) {
+                        var authentication = new UsernamePasswordAuthenticationToken(
+                                usuario,
+                                null,
+                                usuario.getAuthorities()
+                        );
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             }
         }

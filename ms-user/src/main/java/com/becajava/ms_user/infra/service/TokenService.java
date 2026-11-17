@@ -46,6 +46,21 @@ public class TokenService implements TokenGateway {
         }
     }
 
+    public String obterRole(String token) {
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
+            String role = JWT.require(algorithm)
+                    .withIssuer("ms-user")
+                    .build()
+                    .verify(token)
+                    .getClaim("role")
+                    .asString();
+            return role != null ? role : "";
+        } catch (JWTVerificationException exception){
+            return "";
+        }
+    }
+
     private Instant gerarDataExpiracao() {
         return Instant.now().plusSeconds(2 * 60 * 60);
     }

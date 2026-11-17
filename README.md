@@ -59,6 +59,7 @@ docker exec -it postgres psql -U devuser -d user_db -c "SELECT * FROM usuarios;"
 * ROLE_USER: Permissão para criar transações.
 * ROLE_ADMIN: Permissão para relatórios analíticos e gestão total.
 * O registo público (POST /users) cria sempre utilizadores com o perfil USER, mesmo que o pedido envie "role": "ADMIN". Apenas um ADMIN autenticado (com token) pode criar outro ADMIN.
+* Validação de utilizador no worker: o ms-transaction-worker consulta o ms-user (GET /users/{id}) com um token de serviço de curta duração (perfil SERVICE), assinado com o mesmo JWT secret (api.security.token.secret deve ser igual nos dois serviços). Esse token só permite consultar utilizadores. Se o utilizador não existir ou o ms-user estiver indisponível, a transação é REPROVADA.
 
 Promover o primeiro ADMIN (depois é preciso fazer login de novo para obter um token com o novo perfil):
 docker exec -it postgres psql -U devuser -d user_db -c "UPDATE usuarios SET role='ADMIN' WHERE email='teste@email.com';"
